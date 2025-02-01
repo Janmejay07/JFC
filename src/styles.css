@@ -1,0 +1,27 @@
+.dynamic-skill-bar {
+    height: 100%;
+    border-radius: 9999px;
+    transition: all 1s ease-out;
+    transform-origin: left;
+    animation: skill-bar 1s forwards ease-out;
+    box-shadow: 0 0 15px var(--tw-ring-color);
+  }
+  
+  .color-red {
+    background-color: #ef4444;
+  }
+  .color-blue {
+    background-color: #3b82f6;
+  }
+  .color-green {
+    background-color: #10b981;
+  }
+  .color-yellow {
+    background-color: #facc15;
+  }
+  .color-purple {
+    background-color: #8b5cf6;
+  }
+  
+  /* Add additional colors as needed */
+  
