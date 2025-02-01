@@ -5,7 +5,7 @@ import Squad from './Pages/Squad';
 import Stats from './Pages/Stats';
 import Gallery from './Pages/Gallery';
 import ContactUs from './Pages/ContactUs';
-import Login from './Pages/login';
+import Login from './Pages/Login';
 import Signup from './Pages/Signup';
 import { ProfilePage } from './Components/profile';
 
