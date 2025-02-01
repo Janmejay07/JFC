@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/card";
+import { Card } from "../Components/ui/card";
 
 export function StatsCard({ title, subtitle, value, icon: Icon, gradient }) {
   return (
