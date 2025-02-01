@@ -11,7 +11,7 @@ import {
 } from "../Components/ui/table";
 import { Card } from "../Components/ui/card";
 import { Button } from "../Components/ui/button";
-import { Input } from "../Components/ui/input";
+import { Input } from "../Components/ui/Input";
 import {
   Dialog,
   DialogTrigger,
