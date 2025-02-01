@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Calendar, Trophy, Users } from "lucide-react";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
-import HeroSection from "../Components/heroSection";
+import HeroSection from "../Components/HeroSection";
 import { API_ENDPOINTS } from "../lib/config";  
 
 function Home() {
