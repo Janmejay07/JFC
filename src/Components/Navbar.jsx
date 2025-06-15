@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown, LogOut, Settings } from 'lucide-react';
+import { API_ENDPOINTS } from "../lib/config";
 
 const NavLink = ({ text, to, onClick }) => (
   <Link
@@ -76,7 +77,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-3 group">
             <div className="rounded-full bg-gradient-to-br from-blue-400 to-emerald-400 shadow-lg transform group-hover:scale-110 transition-all duration-300">
               <img
-                src="/logo.jpg"
+                src={API_ENDPOINTS.getAboutImage(aboutData.imageUrl)}
                 alt="Logo"
                 className="h-14 w-16 object-cover rounded-full"
               />
