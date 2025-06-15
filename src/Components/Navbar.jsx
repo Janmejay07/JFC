@@ -1,7 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown, LogOut, Settings } from 'lucide-react';
-import { API_ENDPOINTS } from "../lib/config";
 
 const NavLink = ({ text, to, onClick }) => (
   <Link
@@ -31,7 +30,6 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState('');
   const [user, setUser] = useState({ name: '', image: '' }); 
-  const [aboutData, setAboutData] = useState({ imageUrl: '' }); // Add aboutData state
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,24 +55,6 @@ const Navbar = () => {
     return () => window.removeEventListener('storage', checkAuth);
   }, []);
 
-  // Add useEffect to fetch aboutData
-  useEffect(() => {
-    const fetchAboutData = async () => {
-      try {
-        // Replace with your actual API endpoint
-        const response = await fetch('/api/about'); // Adjust the endpoint as needed
-        const data = await response.json();
-        setAboutData(data);
-      } catch (error) {
-        console.error('Error fetching about data:', error);
-        // Set default values if fetch fails
-        setAboutData({ imageUrl: 'default-logo.png' });
-      }
-    };
-
-    fetchAboutData();
-  }, []);
-
   const handleLogin = () => {
     navigate('/login');
   };
@@ -96,7 +76,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-3 group">
             <div className="rounded-full bg-gradient-to-br from-blue-400 to-emerald-400 shadow-lg transform group-hover:scale-110 transition-all duration-300">
               <img
-                src={aboutData.imageUrl ? API_ENDPOINTS.getAboutImage(aboutData.imageUrl) : '/default-logo.png'}
+                src="logo"
                 alt="Logo"
                 className="h-14 w-16 object-cover rounded-full"
               />
