@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown, LogOut, Settings } from 'lucide-react';
-import { API_ENDPOINTS } from './config'; // Import your config
+import { API_ENDPOINTS } from './config';
 
 const NavLink = ({ text, to, onClick }) => (
   <Link
@@ -33,7 +33,7 @@ const Navbar = () => {
   const [user, setUser] = useState({ name: '', image: '' }); 
   const navigate = useNavigate();
 
-  // Get logo URL using your existing config pattern
+  // Get logo from backend assets folder
   const logoUrl = API_ENDPOINTS.getImage('/assets/logo.jpg');
 
   useEffect(() => {
