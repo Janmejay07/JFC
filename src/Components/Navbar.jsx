@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown, LogOut, Settings } from 'lucide-react';
+import { API_ENDPOINTS } from './config'; // Import your config
 
 const NavLink = ({ text, to, onClick }) => (
   <Link
@@ -31,6 +32,9 @@ const Navbar = () => {
   const [loginMessage, setLoginMessage] = useState('');
   const [user, setUser] = useState({ name: '', image: '' }); 
   const navigate = useNavigate();
+
+  // Get logo URL using your existing config pattern
+  const logoUrl = API_ENDPOINTS.getImage('/assets/logo.jpg');
 
   useEffect(() => {
     const checkAuth = () => {
@@ -76,9 +80,13 @@ const Navbar = () => {
           <div className="flex items-center space-x-3 group">
             <div className="rounded-full bg-gradient-to-br from-blue-400 to-emerald-400 shadow-lg transform group-hover:scale-110 transition-all duration-300">
               <img
-                src="logo"
-                alt="Logo"
+                src={logoUrl}
+                alt="JFC Logo"
                 className="h-14 w-16 object-cover rounded-full"
+                onError={(e) => {
+                  // Fallback in case image fails to load
+                  e.target.style.display = 'none';
+                }}
               />
             </div>
             <span className="font-bold text-2xl bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
@@ -95,20 +103,19 @@ const Navbar = () => {
           </button>
 
           {/* Navbar Links (Mobile & Desktop) */}
-<div
-  className={`absolute top-full left-0 w-full rounded-lg  md:bg-transparent md:static md:flex md:items-center md:justify-center md:space-x-3 space-y-3 md:space-y-0 py-4 md:py-0 px-6 md:px-0 transition-all duration-300 ${
-    isMenuOpen
-      ? 'block bg-gradient-to-r from-blue-600 to-emerald-600' // Apply gradient only on mobile
-      : 'hidden'
-  }`}
->
-  <NavLink text="Home" to="/" onClick={() => setIsMenuOpen(false)} />
-  <NavLink text="Squad" to="/squad" onClick={() => setIsMenuOpen(false)} />
-  <NavLink text="Stats" to="/stats" onClick={() => setIsMenuOpen(false)} />
-  <NavLink text="Gallery" to="/gallery" onClick={() => setIsMenuOpen(false)} />
-  <NavLink text="Contact Us" to="/contactus" onClick={() => setIsMenuOpen(false)} />
-</div>
-
+          <div
+            className={`absolute top-full left-0 w-full rounded-lg  md:bg-transparent md:static md:flex md:items-center md:justify-center md:space-x-3 space-y-3 md:space-y-0 py-4 md:py-0 px-6 md:px-0 transition-all duration-300 ${
+              isMenuOpen
+                ? 'block bg-gradient-to-r from-blue-600 to-emerald-600' // Apply gradient only on mobile
+                : 'hidden'
+            }`}
+          >
+            <NavLink text="Home" to="/" onClick={() => setIsMenuOpen(false)} />
+            <NavLink text="Squad" to="/squad" onClick={() => setIsMenuOpen(false)} />
+            <NavLink text="Stats" to="/stats" onClick={() => setIsMenuOpen(false)} />
+            <NavLink text="Gallery" to="/gallery" onClick={() => setIsMenuOpen(false)} />
+            <NavLink text="Contact Us" to="/contactus" onClick={() => setIsMenuOpen(false)} />
+          </div>
 
           {/* Authentication Section */}
           {!isAuthenticated ? (
