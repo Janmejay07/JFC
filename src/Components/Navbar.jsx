@@ -34,7 +34,7 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   // Get logo from backend assets folder
-  const logoUrl = API_ENDPOINTS.getImage('/assets/logo.jpg');
+  const logoUrl = '/logo.jpg';
 
   useEffect(() => {
     const checkAuth = () => {
