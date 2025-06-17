@@ -2,8 +2,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown, LogOut, Settings } from 'lucide-react';
 import { API_ENDPOINTS } from './config';
-// Import logo from assets folder (move logo.jpg to src/assets/)
-import logoImage from '../assets/logo.jpg';
 
 const NavLink = ({ text, to, onClick }) => (
   <Link
@@ -35,14 +33,8 @@ const Navbar = () => {
   const [user, setUser] = useState({ name: '', image: '' }); 
   const navigate = useNavigate();
 
-  // Option 1: Use imported image
-  const logoUrl = logoImage;
-  
-  // Option 2: Use backend URL (if images are stored on backend)
-  // const logoUrl = `${API_ENDPOINTS.BASE_URL}/assets/logo.jpg`;
-  
-  // Option 3: Use frontend public folder (current approach)
-  // const logoUrl = '/logo.jpg';
+  // Use public folder (images are in public/logo.jpg)
+  const logoUrl = '/logo.jpg';
 
   useEffect(() => {
     const checkAuth = () => {
