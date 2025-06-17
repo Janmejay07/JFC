@@ -2,6 +2,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown, LogOut, Settings } from 'lucide-react';
 import { API_ENDPOINTS } from './config';
+// Import logo from assets folder (move logo.jpg to src/assets/)
+import logoImage from '../assets/logo.jpg';
 
 const NavLink = ({ text, to, onClick }) => (
   <Link
@@ -33,8 +35,14 @@ const Navbar = () => {
   const [user, setUser] = useState({ name: '', image: '' }); 
   const navigate = useNavigate();
 
-  // Get logo from backend assets folder
-  const logoUrl = '/logo.jpg';
+  // Option 1: Use imported image
+  const logoUrl = logoImage;
+  
+  // Option 2: Use backend URL (if images are stored on backend)
+  // const logoUrl = `${API_ENDPOINTS.BASE_URL}/assets/logo.jpg`;
+  
+  // Option 3: Use frontend public folder (current approach)
+  // const logoUrl = '/logo.jpg';
 
   useEffect(() => {
     const checkAuth = () => {
@@ -84,7 +92,8 @@ const Navbar = () => {
                 alt="JFC Logo"
                 className="h-14 w-16 object-cover rounded-full"
                 onError={(e) => {
-                  // Fallback in case image fails to load
+                  console.error('Image failed to load:', logoUrl);
+                  // Fallback: hide image and show text only
                   e.target.style.display = 'none';
                 }}
               />
@@ -106,7 +115,7 @@ const Navbar = () => {
           <div
             className={`absolute top-full left-0 w-full rounded-lg  md:bg-transparent md:static md:flex md:items-center md:justify-center md:space-x-3 space-y-3 md:space-y-0 py-4 md:py-0 px-6 md:px-0 transition-all duration-300 ${
               isMenuOpen
-                ? 'block bg-gradient-to-r from-blue-600 to-emerald-600' // Apply gradient only on mobile
+                ? 'block bg-gradient-to-r from-blue-600 to-emerald-600'
                 : 'hidden'
             }`}
           >
@@ -135,9 +144,13 @@ const Navbar = () => {
                 <div className="w-12 h-12 flex items-center justify-center rounded-full overflow-hidden border-2 border-emerald-400 shadow-lg transform group-hover:scale-105 transition-all duration-300 bg-blue-600 text-white text-xl font-bold">
                   {user.image ? (
                     <img
-                      src={user.image}
+                      src={user.image.startsWith('http') ? user.image : `${API_ENDPOINTS.BASE_URL}/${user.image}`}
                       alt="Profile"
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback to initials if profile image fails
+                        e.target.style.display = 'none';
+                      }}
                     />
                   ) : (
                     user.name.charAt(0).toUpperCase()
