@@ -33,8 +33,8 @@ const Navbar = () => {
   const [user, setUser] = useState({ name: '', image: '' }); 
   const navigate = useNavigate();
 
-  // Use public folder (images are in public/logo.jpg)
-  const logoUrl = '/logo.jpg';
+  // Use backend logo URL via environment variable
+  const logoUrl = `${API_ENDPOINTS.BASE_URL}/assets/logo.jpg`;
 
   useEffect(() => {
     const checkAuth = () => {
@@ -84,7 +84,7 @@ const Navbar = () => {
                 alt="JFC Logo"
                 className="h-14 w-16 object-cover rounded-full"
                 onError={(e) => {
-                  console.error('Image failed to load:', logoUrl);
+                  console.error('Logo failed to load from backend:', logoUrl);
                   // Fallback: hide image and show text only
                   e.target.style.display = 'none';
                 }}
