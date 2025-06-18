@@ -91,16 +91,22 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex items-center space-x-3 group">
             <div className="rounded-full bg-gradient-to-br from-blue-400 to-emerald-400 shadow-lg transform group-hover:scale-110 transition-all duration-300">
-              <img
-                src={logoUrl}
-                alt="JFC Logo"
-                className="h-14 w-16 object-cover rounded-full"
-                onError={(e) => {
-                  console.error('Logo failed to load:', logoUrl);
-                  // Fallback: hide image and show text only
-                  e.target.style.display = 'none';
-                }}
-              />
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt="JFC Logo"
+                  className="h-14 w-16 object-cover rounded-full"
+                  onError={(e) => {
+                    console.error('Logo failed to load:', logoUrl);
+                    // Fallback: hide image and show text only
+                    e.target.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <div className="h-14 w-16 flex items-center justify-center rounded-full bg-blue-600 text-white text-2xl font-bold">
+                  JFC
+                </div>
+              )}
             </div>
             <span className="font-bold text-2xl bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
               JFC
