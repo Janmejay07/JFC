@@ -31,10 +31,8 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState('');
   const [user, setUser] = useState({ name: '', image: '' }); 
+  const [logoUrl, setLogoUrl] = useState('');
   const navigate = useNavigate();
-
-  // Use backend logo URL via environment variable
-  const logoUrl = `${API_ENDPOINTS.BASE_URL}/assets/logo.jpg`;
 
   useEffect(() => {
     const checkAuth = () => {
@@ -54,7 +52,21 @@ const Navbar = () => {
       }
     };
 
+    // Fetch about data for logo - same as Home page
+    const fetchAboutData = async () => {
+      try {
+        const aboutResponse = await fetch(API_ENDPOINTS.ABOUT_SECTION);
+        const aboutData = await aboutResponse.json();
+        if (aboutData?.imageUrl) {
+          setLogoUrl(API_ENDPOINTS.getAboutImage(aboutData.imageUrl));
+        }
+      } catch (error) {
+        console.error('Error fetching about data for logo:', error);
+      }
+    };
+
     checkAuth();
+    fetchAboutData();
     window.addEventListener('storage', checkAuth);
     return () => window.removeEventListener('storage', checkAuth);
   }, []);
@@ -84,7 +96,7 @@ const Navbar = () => {
                 alt="JFC Logo"
                 className="h-14 w-16 object-cover rounded-full"
                 onError={(e) => {
-                  console.error('Logo failed to load from backend:', logoUrl);
+                  console.error('Logo failed to load:', logoUrl);
                   // Fallback: hide image and show text only
                   e.target.style.display = 'none';
                 }}
