@@ -26,12 +26,11 @@ const DropdownItem = ({ icon, text, onClick }) => (
 
 const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false); 
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState('');
-  const [user, setUser] = useState({ name: '', image: '' }); 
-  const [logoUrl, setLogoUrl] = useState('');
+  const [user, setUser] = useState({ name: '', image: '' });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,7 +42,6 @@ const Navbar = () => {
         setUser({
           name: storedUser.name || 'W',
           image: storedUser.image || '',
-          isAdmin: storedUser.isAdmin || false 
         });
         setIsAdmin(storedUser.isAdmin || false);
       } else {
@@ -52,28 +50,12 @@ const Navbar = () => {
       }
     };
 
-    // Fetch about data for logo - same as Home page
-    const fetchAboutData = async () => {
-      try {
-        const aboutResponse = await fetch(API_ENDPOINTS.ABOUT_SECTION);
-        const aboutData = await aboutResponse.json();
-        if (aboutData?.imageUrl) {
-          setLogoUrl(API_ENDPOINTS.getAboutImage(aboutData.imageUrl));
-        }
-      } catch (error) {
-        console.error('Error fetching about data for logo:', error);
-      }
-    };
-
     checkAuth();
-    fetchAboutData();
     window.addEventListener('storage', checkAuth);
     return () => window.removeEventListener('storage', checkAuth);
   }, []);
 
-  const handleLogin = () => {
-    navigate('/login');
-  };
+  const handleLogin = () => navigate('/login');
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -88,25 +70,22 @@ const Navbar = () => {
     <nav className="relative bg-gradient-to-r from-blue-600 to-emerald-600 backdrop-blur-lg bg-opacity-90 z-10">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <div className="flex items-center space-x-3 group">
-            <div className="rounded-full bg-gradient-to-br from-blue-400 to-emerald-400 shadow-lg transform group-hover:scale-110 transition-all duration-300">
-              {logoUrl ? (
-                <img
-                  src={logoUrl}
-                  alt="JFC Logo"
-                  className="h-14 w-16 object-cover rounded-full"
-                  onError={(e) => {
-                    console.error('Logo failed to load:', logoUrl);
-                    // Fallback: hide image and show text only
-                    e.target.style.display = 'none';
-                  }}
-                />
-              ) : (
-                <div className="h-14 w-16 flex items-center justify-center rounded-full bg-blue-600 text-white text-2xl font-bold">
-                  JFC
-                </div>
-              )}
+
+          {/* ✅ Logo */}
+          <div
+            className="flex items-center space-x-3 group cursor-pointer"
+            onClick={() => navigate('/')}
+          >
+            <div className="rounded-full bg-gradient-to-br from-blue-400 to-emerald-400 shadow-lg transform group-hover:scale-110 transition-all duration-300 overflow-hidden">
+              <img
+                src={API_ENDPOINTS.LOGO_URL}
+                alt="JFC Logo"
+                className="h-14 w-16 object-cover rounded-full"
+                onError={(e) => {
+                  console.error('Logo failed to load:', API_ENDPOINTS.LOGO_URL);
+                  e.target.style.display = 'none';
+                }}
+              />
             </div>
             <span className="font-bold text-2xl bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
               JFC
@@ -121,22 +100,25 @@ const Navbar = () => {
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
 
-          {/* Navbar Links (Mobile & Desktop) */}
+          {/* Navbar Links */}
           <div
-            className={`absolute top-full left-0 w-full rounded-lg  md:bg-transparent md:static md:flex md:items-center md:justify-center md:space-x-3 space-y-3 md:space-y-0 py-4 md:py-0 px-6 md:px-0 transition-all duration-300 ${
+            className={`absolute top-full left-0 w-full rounded-lg md:bg-transparent md:static md:flex md:items-center md:justify-center md:space-x-3 space-y-3 md:space-y-0 py-4 md:py-0 px-6 md:px-0 transition-all duration-300 ${
               isMenuOpen
                 ? 'block bg-gradient-to-r from-blue-600 to-emerald-600'
                 : 'hidden'
             }`}
           >
-            <NavLink text="Home" to="/" onClick={() => setIsMenuOpen(false)} />
-            <NavLink text="Squad" to="/squad" onClick={() => setIsMenuOpen(false)} />
-            <NavLink text="Stats" to="/stats" onClick={() => setIsMenuOpen(false)} />
-            <NavLink text="Gallery" to="/gallery" onClick={() => setIsMenuOpen(false)} />
-            <NavLink text="Contact Us" to="/contactus" onClick={() => setIsMenuOpen(false)} />
+            {['Home', 'Squad', 'Stats', 'Gallery', 'Contact Us'].map((page) => (
+              <NavLink
+                key={page}
+                text={page}
+                to={`/${page.toLowerCase().replace(' ', '')}`}
+                onClick={() => setIsMenuOpen(false)}
+              />
+            ))}
           </div>
 
-          {/* Authentication Section */}
+          {/* Auth Buttons */}
           {!isAuthenticated ? (
             <button
               onClick={handleLogin}
@@ -150,17 +132,13 @@ const Navbar = () => {
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center space-x-3 focus:outline-none group"
               >
-                {/* Profile Picture or Fallback */}
                 <div className="w-12 h-12 flex items-center justify-center rounded-full overflow-hidden border-2 border-emerald-400 shadow-lg transform group-hover:scale-105 transition-all duration-300 bg-blue-600 text-white text-xl font-bold">
                   {user.image ? (
                     <img
                       src={user.image.startsWith('http') ? user.image : `${API_ENDPOINTS.BASE_URL}/${user.image}`}
                       alt="Profile"
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // Fallback to initials if profile image fails
-                        e.target.style.display = 'none';
-                      }}
+                      onError={(e) => (e.target.style.display = 'none')}
                     />
                   ) : (
                     user.name.charAt(0).toUpperCase()
@@ -173,7 +151,6 @@ const Navbar = () => {
                 />
               </button>
 
-              {/* Dropdown Menu */}
               {isProfileOpen && (
                 <div className="absolute right-0 mt-3 w-56 bg-gradient-to-b from-blue-600 to-emerald-600 rounded-xl shadow-2xl py-2 text-white border border-blue-700/30 backdrop-blur-xl">
                   <DropdownItem
