@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown, LogOut, Settings } from 'lucide-react';
-import { API_ENDPOINTS } from './config';
+import { API_ENDPOINTS } from '../../lib/config'; 
 
 const NavLink = ({ text, to, onClick }) => (
   <Link
