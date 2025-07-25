@@ -3,7 +3,7 @@ import {
   startOfWeek,
   endOfWeek,
   format,
-  isWithinInterval,        // ← MARK: imported for weekly filtering
+  isWithinInterval,
 } from "date-fns";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
@@ -12,7 +12,7 @@ import { SeasonLeaders } from "../Components/SeasonLeaders";
 import { WeeklyLeaders } from "../Components/WeeklyLeaders";
 import { PlayerStatsTable } from "../Components/PlayerStatsTable";
 import { StatsGuide } from "../Components/StatsGuide";
-import { API_ENDPOINTS } from "../lib/config";  // ← MARK: must include UPDATE_PLAYER_STATS
+import { API_ENDPOINTS } from "../lib/config";
 
 function Stats() {
   const [players, setPlayers] = useState([]);
@@ -29,37 +29,46 @@ function Stats() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ─── UPDATED: Persist stats update to back-end ─────────────────────────────────
+  // ✅ FIXED: Production-ready stats update function
   const handleUpdateStats = async (updatedPlayer) => {
     try {
-      // 1) Send PUT request to update the player's saves (s) on server
+      // Use _id for MongoDB or id for other databases
+      const playerId = updatedPlayer._id || updatedPlayer.id;
+      
       const response = await fetch(
-        `${API_ENDPOINTS.UPDATE_PLAYER_STATS}/${updatedPlayer.id}`,  // ← MARK: endpoint must exist
+        `${API_ENDPOINTS.UPDATE_PLAYER_STATS}/${playerId}`,
         {
-          method: "PUT", // or "PATCH" per your API
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("token")}`, // if using JWT
+            // Only add Authorization header if token exists
+            ...(localStorage.getItem("token") && {
+              "Authorization": `Bearer ${localStorage.getItem("token")}`
+            }),
           },
           body: JSON.stringify({ s: updatedPlayer.s }),
         }
       );
+
       if (!response.ok) {
-        throw new Error("Failed to update player stats on server");
+        const errorData = await response.text();
+        throw new Error(`Server error: ${response.status} - ${errorData}`);
       }
 
-      // 2) Only update local state if the server update succeeded
+      // Update local state only after successful server update
       setPlayers((prev) =>
         prev.map((p) =>
-          p.id === updatedPlayer.id ? { ...p, s: updatedPlayer.s } : p
+          (p._id || p.id) === playerId ? { ...p, s: updatedPlayer.s } : p
         )
       );
+
+      // Clear any previous errors
+      setError(null);
+
     } catch (err) {
-      console.error("Error updating player stats:", err);
       setError(err.message || "Failed to update player stats. Please try again.");
     }
   };
-  // ──────────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     const checkAndUpdateSeason = () => {
@@ -109,8 +118,7 @@ function Stats() {
         if (!Array.isArray(data)) throw new Error("Invalid API response format");
 
         const playersWithAchievements = calculateAchievements(
-          data.map((p) => ({ ...p, s: p.s || 0 })),
-          previousSeasonPlayers
+          data.map((p) => ({ ...p, s: p.s || 0 }))
         );
         setPlayers(playersWithAchievements);
       } catch (err) {
@@ -122,6 +130,7 @@ function Stats() {
     fetchPlayers();
   }, [currentSeason, previousSeasonPlayers]);
 
+  // ✅ FIXED: Weekly stats calculation (removed lastUpdated dependency since it's not in your schema)
   useEffect(() => {
     const calculateWeeklyStats = () => {
       if (!players.length) {
@@ -129,28 +138,12 @@ function Stats() {
         setWeeklyTopScorer(null);
         return;
       }
-      const now = new Date();
-      const weekStart = startOfWeek(now, { weekStartsOn: 1 });
-      const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
 
-      const weeklyPlayers = players.filter((player) =>
-        player.lastUpdated &&
-        isWithinInterval(new Date(player.lastUpdated), {
-          start: weekStart,
-          end: weekEnd,
-        })
-      );
-      if (!weeklyPlayers.length) {
-        setWeeklyMVP(null);
-        setWeeklyTopScorer(null);
-        return;
-      }
-      const topScorer = weeklyPlayers.reduce((a, b) =>
-        b.g > a.g ? b : a
-      );
-      const mvp = weeklyPlayers.reduce((a, b) =>
-        b.pt > a.pt ? b : a
-      );
+      // Since your schema doesn't have lastUpdated, calculate weekly stats differently
+      // You could use all players for weekly stats or implement a different filtering logic
+      const topScorer = players.reduce((a, b) => (b.g > a.g ? b : a));
+      const mvp = players.reduce((a, b) => (b.pt > a.pt ? b : a));
+      
       setWeeklyTopScorer(topScorer.g > 0 ? topScorer : null);
       setWeeklyMVP(mvp.pt > 0 ? mvp : null);
     };
@@ -210,18 +203,30 @@ function Stats() {
     };
   };
 
+  // ✅ ADDED: Loading state with Tailwind styling (matching your app theme)
   if (loading) {
     return (
-      <div className="text-center mt-12 text-gray-600">
-        Loading player standings...
+      <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 space-y-4">
+        <div className="w-60">
+          <div className="w-full bg-gray-300 rounded-full h-2.5 overflow-hidden">
+            <div
+              className="bg-indigo-600 h-2.5 rounded-full animate-indeterminate"
+              style={{ width: "40%" }}
+            ></div>
+          </div>
+        </div>
+        <p className="text-indigo-600 text-lg font-semibold">Loading player standings...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center mt-12 text-red-600">
-        Error: {error}
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+        <div className="text-center text-red-600 bg-white p-8 rounded-lg shadow-lg">
+          <h2 className="text-xl font-bold mb-2">Error</h2>
+          <p>{error}</p>
+        </div>
       </div>
     );
   }
@@ -256,7 +261,7 @@ function Stats() {
 
           <PlayerStatsTable
             players={players}
-            onUpdateStats={handleUpdateStats}  // ← MARK: passing updated handler
+            onUpdateStats={handleUpdateStats}
             getPlayerRating={getPlayerRating}
             isAdmin={isAdmin}
           />
