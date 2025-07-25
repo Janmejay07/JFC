@@ -41,7 +41,7 @@ function Gallery() {
       <header className="relative h-[60vh] overflow-hidden">
         <img 
           className="absolute w-full h-full object-cover"
-          src="/g11.jpg"
+          src={API_ENDPOINTS.Header}
           alt="Gallery Header"
         />
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
