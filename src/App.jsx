@@ -14,7 +14,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/Squad" element={<CustomBackNavigation target="/" Component={Squad} />} />
         <Route path="/Stats" element={<CustomBackNavigation target="/" Component={Stats} />} />
         <Route path="/Gallery" element={<CustomBackNavigation target="/" Component={Gallery} />} />
