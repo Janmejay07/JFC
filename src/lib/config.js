@@ -16,6 +16,7 @@
       LOGIN: `${BASE_URL}/api/auth/login`,
       REGISTER: `${BASE_URL}/api/auth/register`,
       LOGO_URL: `${BASE_URL}/assets/logo.jpg`,
+      Header : `${BASE_URL}/assets/g11.jpg`,
       
       // Image URL methods
       getImageUrl: (imagePath) => `${BASE_URL}${imagePath}`,
