@@ -9,9 +9,9 @@ import {
   TableRow,
   TableHead,
 } from "../Components/ui/table";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card } from "../Components/ui/card";
+import { Button } from "../Components/ui/button";
+import { Input } from "../Components/ui/Input";
 import {
   Dialog,
   DialogTrigger,
@@ -19,7 +19,7 @@ import {
   DialogTitle,
   DialogHeader,
   DialogClose,
-} from "@/components/ui/dialog";
+} from "../Components/ui/dialog";
 
 export function PlayerStatsTable({
   players,

@@ -7,6 +7,7 @@
       UPCOMING_MATCHES: `${BASE_URL}/api/Upcomingmatches`,
       ABOUT_SECTION: `${BASE_URL}/api/aboutsection`,
       PLAYER_PROFILES: `${BASE_URL}/api/playerProfiles/Players`,
+      UPDATE_PLAYER_STATS: `${BASE_URL}/api/standings`,
       STANDINGS: `${BASE_URL}/api/standings`,
       PHOTO: `${BASE_URL}/api/Photos`,
       VIDEO: `${BASE_URL}/api/videos`,
@@ -15,6 +16,8 @@
       PROFILE: `${BASE_URL}/api/auth/profile`,
       LOGIN: `${BASE_URL}/api/auth/login`,
       REGISTER: `${BASE_URL}/api/auth/register`,
+      LOGO_URL: `${BASE_URL}/assets/logo.jpg`,
+      Header : `${BASE_URL}/assets/g11.jpg`,
       
       // Image URL methods
       getImageUrl: (imagePath) => `${BASE_URL}${imagePath}`,

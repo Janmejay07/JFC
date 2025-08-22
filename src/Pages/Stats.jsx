@@ -1,5 +1,10 @@
-import { useState, useEffect } from "react";
-import { startOfWeek, endOfWeek, format } from "date-fns";
+import React, { useState, useEffect } from "react";
+import {
+  startOfWeek,
+  endOfWeek,
+  format,
+  isWithinInterval,
+} from "date-fns";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import { StatsHeader } from "../Components/StatsHeader";
@@ -7,7 +12,7 @@ import { SeasonLeaders } from "../Components/SeasonLeaders";
 import { WeeklyLeaders } from "../Components/WeeklyLeaders";
 import { PlayerStatsTable } from "../Components/PlayerStatsTable";
 import { StatsGuide } from "../Components/StatsGuide";
-import { API_ENDPOINTS } from "../lib/config";  
+import { API_ENDPOINTS } from "../lib/config";
 
 function Stats() {
   const [players, setPlayers] = useState([]);
@@ -24,55 +29,81 @@ function Stats() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const handleUpdateStats = (updatedPlayer) => {
-    setPlayers((prevPlayers) => {
-      const newPlayers = prevPlayers.map((p) =>
-        p.player === updatedPlayer.player
-          ? { ...p, s: updatedPlayer.s } // Updating saves
-          : p
+  // ✅ FIXED: Production-ready stats update function
+  const handleUpdateStats = async (updatedPlayer) => {
+    try {
+      // Use _id for MongoDB or id for other databases
+      const playerId = updatedPlayer._id || updatedPlayer.id;
+      
+      const response = await fetch(
+        `${API_ENDPOINTS.UPDATE_PLAYER_STATS}/${playerId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            // Only add Authorization header if token exists
+            ...(localStorage.getItem("token") && {
+              "Authorization": `Bearer ${localStorage.getItem("token")}`
+            }),
+          },
+          body: JSON.stringify({ s: updatedPlayer.s }),
+        }
       );
-      return newPlayers;
-    });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Server error: ${response.status} - ${errorData}`);
+      }
+
+      // Update local state only after successful server update
+      setPlayers((prev) =>
+        prev.map((p) =>
+          (p._id || p.id) === playerId ? { ...p, s: updatedPlayer.s } : p
+        )
+      );
+
+      // Clear any previous errors
+      setError(null);
+
+    } catch (err) {
+      setError(err.message || "Failed to update player stats. Please try again.");
+    }
   };
 
   useEffect(() => {
     const checkAndUpdateSeason = () => {
       const now = new Date();
-      const nextSeasonStart = new Date(now.getFullYear(), now.getMonth() + 1, 1); // 1st of next month
-    
+      const nextSeasonStart = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        1
+      );
       if (now >= nextSeasonStart) {
         setPreviousSeasonPlayers(players);
         setPreviousWinners({
           mvp: weeklyMVP,
           topScorer: weeklyTopScorer,
         });
-    
-        // Reset MVP, Top Scorer, and Achievements
         setWeeklyMVP(null);
         setWeeklyTopScorer(null);
-    
-        setPlayers((prevPlayers) =>
-          prevPlayers.map((player) => ({ ...player, achievements: [] }))
+        setPlayers((prev) =>
+          prev.map((player) => ({ ...player, achievements: [] }))
         );
-    
         setCurrentSeason((prev) => prev + 1);
         setSeasonStartDate(nextSeasonStart);
       }
     };
-    
-    
 
     checkAndUpdateSeason();
     const intervalId = setInterval(checkAndUpdateSeason, 1000 * 60 * 60 * 24);
     return () => clearInterval(intervalId);
-  }, [seasonStartDate, players]);
+  }, [seasonStartDate, players, weeklyMVP, weeklyTopScorer]);
 
   useEffect(() => {
     const checkAdminStatus = () => {
       const storedUser = JSON.parse(localStorage.getItem("user")) || {};
       setIsAdmin(storedUser.isAdmin || false);
     };
-
     checkAdminStatus();
     window.addEventListener("storage", checkAdminStatus);
     return () => window.removeEventListener("storage", checkAdminStatus);
@@ -81,36 +112,25 @@ function Stats() {
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        const response = await fetch(API_ENDPOINTS.STANDINGS);
-        if (!response.ok) {
-          throw new Error("Failed to fetch player data");
-        }
-        const data = await response.json();
+        const res = await fetch(API_ENDPOINTS.STANDINGS);
+        if (!res.ok) throw new Error("Failed to fetch player data");
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error("Invalid API response format");
 
-        if (!data || !Array.isArray(data)) {
-          throw new Error("Invalid API response format");
-        }
-
-        // Ensure saves exist in the API response
         const playersWithAchievements = calculateAchievements(
-          data.map((player) => ({
-            ...player,
-            s: player.s || 0, // Default to 0 if missing
-          })),
-          previousSeasonPlayers
+          data.map((p) => ({ ...p, s: p.s || 0 }))
         );
-
         setPlayers(playersWithAchievements);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        setError(err.message || "An error occurred");
       } finally {
         setLoading(false);
       }
     };
-
     fetchPlayers();
   }, [currentSeason, previousSeasonPlayers]);
 
+  // ✅ FIXED: Weekly stats calculation (removed lastUpdated dependency since it's not in your schema)
   useEffect(() => {
     const calculateWeeklyStats = () => {
       if (!players.length) {
@@ -119,65 +139,29 @@ function Stats() {
         return;
       }
 
-      const now = new Date();
-      const weekStart = startOfWeek(now, { weekStartsOn: 1 });
-      const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
-
-      const weeklyPlayers = players.filter(
-        (player) =>
-          player.lastUpdated &&
-          isWithinInterval(new Date(player.lastUpdated), {
-            start: weekStart,
-            end: weekEnd,
-          })
-      );
-
-      if (!weeklyPlayers.length) {
-        setWeeklyMVP(null);
-        setWeeklyTopScorer(null);
-        return;
-      }
-
-      const weeklyTopScorer = weeklyPlayers.reduce(
-        (prev, current) => (current.g > prev.g ? current : prev),
-        weeklyPlayers[0]
-      );
-
-      const weeklyMVP = weeklyPlayers.reduce(
-        (prev, current) => (current.pt > prev.pt ? current : prev),
-        weeklyPlayers[0]
-      );
-
-      setWeeklyTopScorer(weeklyTopScorer.g > 0 ? weeklyTopScorer : null);
-      setWeeklyMVP(weeklyMVP.pt > 0 ? weeklyMVP : null);
+      // Since your schema doesn't have lastUpdated, calculate weekly stats differently
+      // You could use all players for weekly stats or implement a different filtering logic
+      const topScorer = players.reduce((a, b) => (b.g > a.g ? b : a));
+      const mvp = players.reduce((a, b) => (b.pt > a.pt ? b : a));
+      
+      setWeeklyTopScorer(topScorer.g > 0 ? topScorer : null);
+      setWeeklyMVP(mvp.pt > 0 ? mvp : null);
     };
-
     calculateWeeklyStats();
   }, [players]);
 
   const calculateAchievements = (currentPlayers) => {
     if (!currentPlayers.length) return [];
-  
     const maxGoals = Math.max(...currentPlayers.map((p) => p.g || 0));
-    const maxMatches = Math.max(...currentPlayers.map((p) => p.p || 0));
+    const maxGames = Math.max(...currentPlayers.map((p) => p.p || 0));
     const maxSaves = Math.max(...currentPlayers.map((p) => p.s || 0));
-  
     return currentPlayers.map((player) => {
-      const achievements = [];
-  
-      if (player.g === maxGoals && maxGoals > 0) {
-        achievements.push("Top Scorer");
-      }
-  
-      if (player.p === maxMatches && maxMatches > 0) {
-        achievements.push("Most Consistent");
-      }
-  
-      if (player.w / player.p > 0.6 && player.s === maxSaves && maxSaves > 0) {
-        achievements.push("Best Defender");
-      }
-  
-      return { ...player, achievements };
+      const ach = [];
+      if (player.g === maxGoals && maxGoals > 0) ach.push("Top Scorer");
+      if (player.p === maxGames && maxGames > 0) ach.push("Most Consistent");
+      if (player.s === maxSaves && maxSaves > 0 && player.w / player.p > 0.6)
+        ach.push("Best Defender");
+      return { ...player, achievements: ach };
     });
   };
 
@@ -186,32 +170,28 @@ function Stats() {
     return Number(((pt / 50) * 10).toFixed(1));
   };
 
-  const getTopPerformer = () => {
-    if (!players.length) return null;
-    return players.reduce(
-      (prev, current) => (current.pt > prev.pt ? current : prev),
-      players[0]
-    );
-  };
+  const getTopPerformer = () =>
+    players.length
+      ? players.reduce((a, b) => (b.pt > a.pt ? b : a))
+      : null;
 
-  const getTopScorer = () => {
-    if (!players.length) return null;
-    return players.reduce(
-      (prev, current) => (current.g > prev.g ? current : prev),
-      players[0]
-    );
-  };
+  const getTopScorer = () =>
+    players.length
+      ? players.reduce((a, b) => (b.g > a.g ? b : a))
+      : null;
 
   const formatSeasonDates = () => {
-    const start = new Date(seasonStartDate.getFullYear(), seasonStartDate.getMonth(), 1);
-    const end = new Date(start.getFullYear(), start.getMonth() + 1, 0); // Last day of the month
-  
+    const start = new Date(
+      seasonStartDate.getFullYear(),
+      seasonStartDate.getMonth(),
+      1
+    );
+    const end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
     return {
       start: format(start, "MMMM dd, yyyy"),
       end: format(end, "MMMM dd, yyyy"),
     };
   };
-
 
   const formatWeeklyDates = () => {
     const now = new Date();
@@ -223,22 +203,38 @@ function Stats() {
     };
   };
 
+  // ✅ ADDED: Loading state with Tailwind styling (matching your app theme)
   if (loading) {
     return (
-      <div className="text-center mt-12 text-gray-600">
-        Loading player standings...
+      <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 space-y-4">
+        <div className="w-60">
+          <div className="w-full bg-gray-300 rounded-full h-2.5 overflow-hidden">
+            <div
+              className="bg-indigo-600 h-2.5 rounded-full animate-indeterminate"
+              style={{ width: "40%" }}
+            ></div>
+          </div>
+        </div>
+        <p className="text-indigo-600 text-lg font-semibold">Loading player standings...</p>
       </div>
     );
   }
 
   if (error) {
-    return <div className="text-center mt-12 text-red-600">Error: {error}</div>;
+    return (
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+        <div className="text-center text-red-600 bg-white p-8 rounded-lg shadow-lg">
+          <h2 className="text-xl font-bold mb-2">Error</h2>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
   }
 
   const seasonDates = formatSeasonDates();
   const weeklyDates = formatWeeklyDates();
-  const topScorer = getTopScorer();
   const topPlayer = getTopPerformer();
+  const topScorer = getTopScorer();
 
   return (
     <>

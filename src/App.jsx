@@ -5,7 +5,7 @@ import Squad from './Pages/Squad';
 import Stats from './Pages/Stats';
 import Gallery from './Pages/Gallery';
 import ContactUs from './Pages/ContactUs';
-import Login from './Pages/login';
+import Login from './Pages/Login';
 import Signup from './Pages/Signup';
 import { ProfilePage } from './Components/profile';
 
@@ -15,6 +15,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/Squad" element={<CustomBackNavigation target="/" Component={Squad} />} />
         <Route path="/Stats" element={<CustomBackNavigation target="/" Component={Stats} />} />
         <Route path="/Gallery" element={<CustomBackNavigation target="/" Component={Gallery} />} />

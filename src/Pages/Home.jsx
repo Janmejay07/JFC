@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Calendar, Trophy, Users } from "lucide-react";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
-import HeroSection from "../Components/heroSection";
+import HeroSection from "../Components/HeroSection";
 import { API_ENDPOINTS } from "../lib/config";  
 
 function Home() {
@@ -61,8 +61,20 @@ function Home() {
 
   // Loading State
   if (!aboutData.title) {
-    return <div>Loading...</div>;
-  }
+  return (
+    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black space-y-4">
+      <div className="w-60">
+        <div className="w-full bg-gray-700 rounded-full h-2.5 overflow-hidden">
+          <div
+            className="bg-blue-600 h-2.5 rounded-full animate-indeterminate"
+            style={{ width: "40%" }}
+          ></div>
+        </div>
+      </div>
+      <p className="text-blue-400 text-lg font-semibold">Loading...</p>
+    </div>
+  );
+}
   return (
     <div>
       <Navbar />
