@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { API_ENDPOINTS } from "../lib/config";  
 
 const HeroSection = () => {
-  const [heroSection, setHeroSection] = useState(null); // Default to null
+  const [heroSection, setHeroSection] = useState(null); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
