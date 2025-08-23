@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
-import SkillBar from "../Components/SkillBar"; 
-import { API_ENDPOINTS } from "../lib/config";  
+import SkillBar from "../Components/SkillBar"; // ⬅️ Import here
+import { API_ENDPOINTS } from "../lib/config";
+import { Users, Calendar, Award, TrendingUp, Star, Clock } from "lucide-react";
+
 function Squad() {
   const [players, setPlayers] = useState([]);
   const [error, setError] = useState(null);
@@ -23,97 +25,142 @@ function Squad() {
   }, []);
 
   if (error) {
-    return <div className="text-red-500 text-center mt-20">{error}</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="text-red-500 text-xl font-semibold mb-2">
+            Error Loading Players
+          </div>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
   }
 
   if (players.length === 0) {
-    return <div className="text-blue-500 text-center mt-20">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+          <div className="text-blue-600 text-xl font-semibold">
+            Loading Squad...
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
       <Navbar />
-      <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-white">
-        <div className="relative">
-          <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-600 py-20 mb-8 shadow-2xl relative overflow-hidden">
-            <div className="absolute inset-0 flex items-center justify-center opacity-5">
-              <span className="text-[20vw] font-black text-white whitespace-nowrap animate-scroll">
-                MY SQUAD MY SQUAD MY SQUAD
-              </span>
-            </div>
 
-            <div className="max-w-7xl mx-auto px-4 relative z-10">
-              <h1 className="text-7xl md:text-9xl font-black text-white text-center mb-3 animate-fade-in drop-shadow-2xl">
-                MY SQUAD
-              </h1>
-              <div className="flex justify-center items-center gap-2">
-                <div className="w-12 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-                <div className="w-24 h-2 bg-yellow-400 rounded-full animate-pulse delay-75"></div>
-                <div className="w-12 h-2 bg-yellow-400 rounded-full animate-pulse delay-150"></div>
-              </div>
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 py-24 mb-12 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 relative z-10 text-center">
+          <div className="flex justify-center mb-6">
+            <div className="bg-white/10 backdrop-blur-sm rounded-full p-4 shadow-2xl">
+              <Users className="h-12 w-12 text-yellow-400" />
+            </div>
+          </div>
+          <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight drop-shadow-2xl">
+            MY ELITE SQUAD
+          </h1>
+          <p className="text-xl text-blue-100 max-w-3xl mx-auto mb-8 leading-relaxed">
+            Meet the extraordinary athletes who define excellence, embodying
+            skill, dedication, and team spirit on every play.
+          </p>
+        </div>
+      </div>
+
+      {/* Squad Stats */}
+      <div className="max-w-7xl mx-auto px-4 mb-12">
+        <div className="bg-white rounded-2xl shadow-xl border border-blue-100 p-6 backdrop-blur-sm">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <Users className="h-6 w-6 text-blue-600 mx-auto mb-2" />
+              <div className="text-3xl font-black">{players.length}</div>
+              <div className="text-sm text-gray-600">Active Players</div>
+            </div>
+            <div className="text-center">
+              <Award className="h-6 w-6 text-blue-600 mx-auto mb-2" />
+              <div className="text-3xl font-black">87%</div>
+              <div className="text-sm text-gray-600">Avg. Skill Level</div>
+            </div>
+            <div className="text-center">
+              <TrendingUp className="h-6 w-6 text-blue-600 mx-auto mb-2" />
+              <div className="text-3xl font-black">15</div>
+              <div className="text-sm text-gray-600">Wins This Season</div>
+            </div>
+            <div className="text-center">
+              <Star className="h-6 w-6 text-blue-600 mx-auto mb-2" />
+              <div className="text-3xl font-black">4.8</div>
+              <div className="text-sm text-gray-600">Team Rating</div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="max-w-6xl mx-auto px-4 pb-12 grid grid-cols-1 gap-8">
+      {/* Players Grid */}
+      <div className="max-w-7xl mx-auto px-4 pb-16">
+        <div className="space-y-8">
           {players.map((player) => (
             <div
               key={player._id}
-              className="bg-white backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden"
+              className="bg-white rounded-3xl shadow-xl border border-blue-100 overflow-hidden"
             >
               <div className="md:flex">
-                <div className="md:w-1/3 relative group">
+                {/* Player Image */}
+                <div className="md:w-2/5 overflow-hidden group">
                   <img
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
                     src={API_ENDPOINTS.getPlayerImage(player.image)}
                     alt={player.name}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 via-blue-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <h2 className="text-2xl font-bold text-white mb-1">
-                      {player.name}
-                    </h2>
-                    <p className="text-yellow-400 font-semibold">
-                      {player.position}
-                    </p>
-                  </div>
                 </div>
 
-                <div className="md:w-2/3 p-8">
-                  <h2 className="text-4xl font-bold">{player.name}</h2>
-                  <p className="text-lg font-semibold">{player.position}</p>
-                  <div className="grid grid-cols-2 gap-4 mb-8 mt-6">
-                    <div className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border border-blue-200">
-                      <p className="text-sm text-blue-600 font-medium mb-1">
-                        Date of Birth
-                      </p>
-                      <p className="text-lg font-bold text-gray-900">
-                        {player.dob}
-                      </p>
+                {/* Player Details */}
+                <div className="md:w-3/5 p-8 lg:p-12">
+                  <h2 className="text-4xl font-black text-gray-900 mb-3">
+                    {player.name}
+                  </h2>
+                  <div className="flex items-center space-x-4 mb-4">
+                    <span className="px-4 py-2 rounded-full text-sm font-bold bg-blue-100 text-blue-700">
+                      {player.position}
+                    </span>
+                    <div className="flex items-center text-gray-600">
+                      <Clock className="h-4 w-4 mr-2" />
+                      <span className="text-sm">Age {player.age}</span>
                     </div>
-                    <div className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border border-blue-200">
-                      <p className="text-sm text-blue-600 font-medium mb-1">Age</p>
-                      <p className="text-lg font-bold text-gray-900">
-                        {player.age} years
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 mb-8">
+                    <div className="bg-blue-50 p-6 rounded-2xl border">
+                      <Calendar className="h-4 w-4 text-blue-600 mb-2" />
+                      <p className="text-sm font-bold">Date of Birth</p>
+                      <p className="text-lg font-black">{player.dob}</p>
+                    </div>
+                    <div className="bg-blue-50 p-6 rounded-2xl border">
+                      <TrendingUp className="h-4 w-4 text-blue-600 mb-2" />
+                      <p className="text-sm font-bold">Experience</p>
+                      <p className="text-lg font-black">
+                        {player.age - 18} years
                       </p>
                     </div>
                   </div>
-                  <div className="mb-8 bg-gradient-to-br from-blue-50 to-white p-6 rounded-xl border border-blue-200">
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">
-                      Biography
-                    </h3>
-                    <p className="text-gray-700 leading-relaxed">{player.bio}</p>
+
+                  <div className="bg-blue-50 p-6 rounded-2xl border mb-8">
+                    <h3 className="text-xl font-black mb-2">Biography</h3>
+                    <p className="text-gray-700">{player.bio}</p>
                   </div>
-                  <div className="bg-gradient-to-br from-blue-50 to-white p-6 rounded-xl border border-blue-200">
-                    <h3 className="text-xl font-bold text-gray-900 mb-6">
-                      Player Skills
-                    </h3>
-                    {player.skills.map((skill, index) => (
+
+                  <div className="bg-blue-50 p-6 rounded-2xl border">
+                    <h3 className="text-xl font-black mb-4">Performance</h3>
+                    {player.skills.map((skill, i) => (
                       <SkillBar
-                        key={index}
+                        key={i}
                         name={skill.name}
                         percentage={skill.percentage}
-                        delay={index * 100}
+                        delay={i * 200}
                       />
                     ))}
                   </div>
@@ -123,6 +170,7 @@ function Squad() {
           ))}
         </div>
       </div>
+
       <Footer />
     </div>
   );
