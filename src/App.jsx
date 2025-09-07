@@ -8,6 +8,8 @@ import ContactUs from './Pages/ContactUs';
 import Login from './Pages/Login';
 import Signup from './Pages/Signup';
 import { ProfilePage } from './Components/profile';
+import ForgotPassword from "./Pages/ForgotPassword";
+import ResetPassword from "./Pages/ResetPassword";
 
 
 function App() {
@@ -23,6 +25,8 @@ function App() {
         <Route path="/login" element={<CustomBackNavigation target="/" Component={Login} />} />
         <Route path="/signup" element={<CustomBackNavigation target="/" Component={Signup} />} />
         <Route path="/profile" element={<CustomBackNavigation target="/" Component={ProfilePage} />} />
+        <Route path="/forgot-password" element={<ForgotPassword target="/" Component={ForgotPassword}/>} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Routes>
     </Router>
   );

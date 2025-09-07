@@ -9,18 +9,18 @@ const NavLink = ({ text, to, onClick }) => (
     onClick={onClick}
     className="relative flex items-center px-4 py-2 rounded-lg text-white/90 hover:text-white transition-all duration-300 hover:bg-white/10 group"
   >
-    <span className="font-medium">{text}</span>
-    <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-blue-400 to-emerald-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+    <span className="font-semibold text-sm">{text}</span>
+    <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
   </Link>
 );
 
 const DropdownItem = ({ icon, text, onClick }) => (
   <button
     onClick={onClick}
-    className="flex items-center w-full px-4 py-2 text-sm hover:bg-blue-800/30 focus:outline-none"
+    className="flex items-center w-full px-4 py-2 text-sm hover:bg-white/10 focus:outline-none transition-colors duration-200 rounded-lg mx-2"
   >
     {icon}
-    <span className="ml-3">{text}</span>
+    <span className="ml-3 font-medium">{text}</span>
   </button>
 );
 
@@ -67,7 +67,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="relative bg-gradient-to-r from-blue-600 to-emerald-600 backdrop-blur-lg bg-opacity-90 z-10">
+    <nav className="relative bg-gradient-primary backdrop-blur-lg bg-opacity-90 z-10 shadow-lg">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-20">
 
@@ -76,7 +76,7 @@ const Navbar = () => {
             className="flex items-center space-x-3 group cursor-pointer"
             onClick={() => navigate('/')}
           >
-            <div className="rounded-full bg-gradient-to-br from-blue-400 to-emerald-400 shadow-lg transform group-hover:scale-110 transition-all duration-300 overflow-hidden">
+            <div className="rounded-full bg-gradient-primary shadow-primary transform group-hover:scale-110 transition-all duration-300 overflow-hidden">
               <img
                 src={API_ENDPOINTS.LOGO_URL}
                 alt="JFC Logo"
@@ -87,7 +87,7 @@ const Navbar = () => {
                 }}
               />
             </div>
-            <span className="font-bold text-2xl bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+            <span className="font-bold text-2xl bg-gradient-to-r from-white to-primary-200 bg-clip-text text-transparent">
               JFC
             </span>
           </div>
@@ -104,7 +104,7 @@ const Navbar = () => {
           <div
             className={`absolute top-full left-0 w-full rounded-lg md:bg-transparent md:static md:flex md:items-center md:justify-center md:space-x-3 space-y-3 md:space-y-0 py-4 md:py-0 px-6 md:px-0 transition-all duration-300 ${
               isMenuOpen
-                ? 'block bg-gradient-to-r from-blue-600 to-emerald-600'
+                ? 'block bg-gradient-primary'
                 : 'hidden'
             }`}
           >
@@ -122,7 +122,7 @@ const Navbar = () => {
           {!isAuthenticated ? (
             <button
               onClick={handleLogin}
-              className="hidden md:block px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300"
+              className="hidden md:block px-6 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-all duration-300 font-semibold border border-white/30 hover:border-white/50"
             >
               Login
             </button>
@@ -132,7 +132,7 @@ const Navbar = () => {
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center space-x-3 focus:outline-none group"
               >
-                <div className="w-12 h-12 flex items-center justify-center rounded-full overflow-hidden border-2 border-emerald-400 shadow-lg transform group-hover:scale-105 transition-all duration-300 bg-blue-600 text-white text-xl font-bold">
+                <div className="w-12 h-12 flex items-center justify-center rounded-full overflow-hidden border-2 border-secondary-400 shadow-lg transform group-hover:scale-105 transition-all duration-300 bg-primary-600 text-white text-xl font-bold">
                   {user.image ? (
                     <img
                       src={user.image.startsWith('http') ? user.image : `${API_ENDPOINTS.BASE_URL}/${user.image}`}
@@ -152,7 +152,7 @@ const Navbar = () => {
               </button>
 
               {isProfileOpen && (
-                <div className="absolute right-0 mt-3 w-56 bg-gradient-to-b from-blue-600 to-emerald-600 rounded-xl shadow-2xl py-2 text-white border border-blue-700/30 backdrop-blur-xl">
+                <div className="absolute right-0 mt-3 w-56 bg-gradient-primary rounded-xl shadow-2xl py-2 text-white border border-primary-700/30 backdrop-blur-xl">
                   <DropdownItem
                     icon={<Settings className="h-4 w-4" />}
                     text="Profile Settings"
@@ -172,7 +172,7 @@ const Navbar = () => {
 
       {/* Login Message */}
       {loginMessage && (
-        <div className="absolute top-16 left-1/2 transform -translate-x-1/2 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg">
+        <div className="absolute top-16 left-1/2 transform -translate-x-1/2 bg-success text-white py-2 px-4 rounded-lg shadow-lg">
           {loginMessage}
         </div>
       )}

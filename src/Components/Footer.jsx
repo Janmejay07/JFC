@@ -3,13 +3,13 @@ import { Dribbble, Facebook, Twitter, Instagram } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="bg-gradient-to-r from-gray-900 to-blue-900 border-t border-blue-800/30">
+    <footer className="bg-gradient-dark border-t border-primary-800/30">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
           {/* Brand and Social */}
           <div className="flex flex-col items-center md:items-start space-y-4">
             <div className="flex items-center space-x-3">
-              <Dribbble className="h-5 w-5 text-blue-400" />
+              <Dribbble className="h-5 w-5 text-primary-400" />
               <span className="font-semibold text-white">JaunpurFC</span>
             </div>
             <div className="flex space-x-4">
@@ -29,8 +29,8 @@ const Footer = () => {
         </div>
 
         {/* Copyright */}
-        <div className="mt-8 pt-4 border-t border-blue-800/30 text-center">
-          <p className="text-blue-100/60 text-sm">
+        <div className="mt-8 pt-4 border-t border-primary-800/30 text-center">
+          <p className="text-primary-100/60 text-sm">
             © 2024 JaunpurFC. All rights reserved.
           </p>
         </div>
@@ -42,7 +42,7 @@ const Footer = () => {
 const FooterLink = ({ text, href }) => (
   <a
     href={href}
-    className="text-blue-100/80 hover:text-white transition-colors duration-300"
+    className="text-primary-100/80 hover:text-white transition-colors duration-300 font-medium"
   >
     {text}
   </a>
@@ -51,8 +51,8 @@ const FooterLink = ({ text, href }) => (
 const SocialLink = ({ icon }) => (
   <a
     href="https://www.instagram.com/offside_jfc?igsh=MWhpcXlmY2RtMm4ydw=="
-    className="p-2 rounded-full bg-blue-800/30 hover:bg-gradient-to-br hover:from-blue-400 hover:to-emerald-400 
-               text-blue-100 hover:text-white transition-all duration-300 transform hover:scale-110"
+    className="p-2 rounded-full bg-primary-800/30 hover:bg-gradient-primary 
+               text-primary-100 hover:text-white transition-all duration-300 transform hover:scale-110"
   >
     {icon}
   </a>

@@ -18,31 +18,46 @@ import {
   DialogContent,
   DialogTitle,
   DialogHeader,
-  DialogClose,
+  DialogDescription,
 } from "../Components/ui/dialog";
 
 export function PlayerStatsTable({
   players,
-  onUpdateStats,
+  onUpdateStats = null, // Default to null to avoid accidental calls
   getPlayerRating,
   isAdmin = false,
+  seasonKey,
 }) {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false); // For success message
+  const [success, setSuccess] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const handleUpdateStats = async (playerData) => {
-    if (!playerData?._id) {
-      setError("Player ID is missing!");
+  const getDisplayName = (playerField) => {
+    if (typeof playerField === 'string') return playerField;
+    if (playerField && typeof playerField === 'object') return playerField.name || playerField.username || playerField.fullName || '';
+    return '';
+  };
+
+  // Completely isolated update function - no parent dependencies
+  const handlePlayerStatsUpdate = async (playerData) => {
+    console.log("=== ISOLATED UPDATE FUNCTION START ===");
+    console.log("Player data received:", playerData);
+    
+    if (!playerData || !playerData._id) {
+      setError(`Player ID is missing! Received: ${JSON.stringify(playerData)}`);
       return;
     }
 
-    setError(null); // Reset error state before new request
-    setSuccess(false); // Reset success message before request
+    setError(null);
+    setSuccess(false);
+    setIsUpdating(true);
 
     try {
+      console.log("Making API call to:", `${API_ENDPOINTS.STANDINGS}/${playerData._id}`);
+      
       const response = await fetch(
-        API_ENDPOINTS.STANDINGS(playerData._id),
+        `${API_ENDPOINTS.STANDINGS}/${playerData._id}`,
         {
           method: "PATCH",
           headers: {
@@ -51,6 +66,7 @@ export function PlayerStatsTable({
           body: JSON.stringify({
             _id: playerData._id,
             player: playerData.player,
+            season: playerData.season || seasonKey,
             p: parseInt(playerData.p) || 0,
             w: parseInt(playerData.w) || 0,
             d: parseInt(playerData.d) || 0,
@@ -66,16 +82,25 @@ export function PlayerStatsTable({
       if (response.ok) {
         const updatedPlayer = await response.json();
 
-        // Update the local state of players
         const updatedPlayers = players.map((player) =>
-          player._id === updatedPlayer._id ? updatedPlayer : player
+          player._id === updatedPlayer._id ? { ...updatedPlayer, season: updatedPlayer.season || seasonKey } : player
         );
 
-        // Notify the parent component of the update (if needed)
-        onUpdateStats(updatedPlayers);
-
-        setSuccess(true); // Set success message
-        setError(null); // Clear error message
+        if (onUpdateStats) {
+          onUpdateStats(updatedPlayers);
+        }
+        // notify listeners to refetch if needed
+        window.dispatchEvent(new Event('standings-updated'));
+        // reflect latest values in dialog immediately
+        setSelectedPlayer(updatedPlayer);
+        setSuccess(true);
+        setError(null);
+        
+        // Close dialog after successful update
+        setTimeout(() => {
+          setSelectedPlayer(null);
+          setSuccess(false);
+        }, 1500);
       } else {
         const errorData = await response.text();
         setError(errorData || "Failed to update player stats");
@@ -84,6 +109,9 @@ export function PlayerStatsTable({
     } catch (error) {
       setError("Network error while updating stats");
       console.error("Error updating stats:", error);
+    } finally {
+      setIsUpdating(false);
+      console.log("=== ISOLATED UPDATE FUNCTION END ===");
     }
   };
 
@@ -117,7 +145,7 @@ export function PlayerStatsTable({
               <TableCell className="font-medium text-gray-500">#{index + 1}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <div className="font-semibold text-gray-900">{player.player}</div>
+                  <div className="font-semibold text-gray-900">{getDisplayName(player.player)}</div>
                 </div>
               </TableCell>
               <TableCell className="text-center text-gray-700 font-semibold">
@@ -135,15 +163,22 @@ export function PlayerStatsTable({
               <TableCell className="text-center font-bold text-gray-900">{player.pt}</TableCell>
               {isAdmin && (
                 <TableCell>
-                  <Dialog>
+                  <Dialog open={selectedPlayer?._id === player._id} onOpenChange={(open) => {
+                    if (!open) {
+                      setSelectedPlayer(null);
+                      setError(null);
+                      setSuccess(false);
+                    }
+                  }}>
                     <DialogTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => {
-                          setSelectedPlayer(player);
-                          setError(null); // Reset error when opening dialog
-                          setSuccess(false); // Reset success message when opening dialog
+                          console.log("Trigger clicked for player:", player); // Debug log
+                          setSelectedPlayer({ ...player }); // Create a copy
+                          setError(null);
+                          setSuccess(false);
                         }}
                       >
                         <Award className="h-4 w-4" />
@@ -152,8 +187,11 @@ export function PlayerStatsTable({
                     <DialogContent className="bg-gradient-to-r from-blue-400 to-emerald-400 p-6">
                       <DialogHeader>
                         <DialogTitle className="text-2xl font-semibold text-white">
-                          Update {selectedPlayer?.player}'s Stats
+                          Update {getDisplayName(selectedPlayer?.player)}&apos;s Stats
                         </DialogTitle>
+                        <DialogDescription className="text-white/90">
+                          Adjust the fields below and click Update Stats to save changes.
+                        </DialogDescription>
                       </DialogHeader>
                       {error && (
                         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
@@ -167,7 +205,6 @@ export function PlayerStatsTable({
                       )}
                       {selectedPlayer && (
                         <div className="grid grid-cols-2 gap-6 py-6">
-                          {/* Form Fields for Player Stats */}
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-white">Played</label>
                             <Input
@@ -196,7 +233,6 @@ export function PlayerStatsTable({
                               }
                             />
                           </div>
-                          {/* Additional fields here (d, l, g, a, s, pt) */}
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-white">
                               Drawn
@@ -293,16 +329,20 @@ export function PlayerStatsTable({
                               }
                             />
                           </div>
-                          <DialogClose asChild>
-                            <Button
-                              className="col-span-2 mt-4 bg-white text-blue-600 hover:bg-white/90"
-                              onClick={() => {
-                                handleUpdateStats(selectedPlayer);
-                              }}
-                            >
-                              Update Stats
-                            </Button>
-                          </DialogClose>
+                          <Button
+                            className="col-span-2 mt-4 bg-white text-blue-600 hover:bg-white/90"
+                            onClick={() => {
+                              console.log("Button clicked, selectedPlayer:", selectedPlayer); // Debug log
+                              if (selectedPlayer && selectedPlayer._id) {
+                                handlePlayerStatsUpdate(selectedPlayer);
+                              } else {
+                                setError("No player selected or player ID missing");
+                              }
+                            }}
+                            disabled={isUpdating}
+                          >
+                            {isUpdating ? "Updating..." : "Update Stats"}
+                          </Button>
                         </div>
                       )}
                     </DialogContent>

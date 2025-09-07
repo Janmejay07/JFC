@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Calendar, Trophy, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import HeroSection from "../Components/HeroSection";
-import { API_ENDPOINTS } from "../lib/config";  
+import MatchesSection from "../Components/CompleteMatches";
+import UpcomingMatchesSection from "../Pages/UpcomingMatchesSection";
+import { FullPageLoading } from "../Components/ui/Loading";
+import { API_ENDPOINTS } from "../lib/config";
 
 function Home() {
   const [aboutData, setAboutData] = useState({
@@ -12,8 +15,6 @@ function Home() {
     imageUrl: "",
   });
   const [players, setPlayers] = useState([]);
-  const [recentMatches, setRecentMatches] = useState([]);
-  const [upcomingMatches, setUpcomingMatches] = useState([]);
 
   // Fetch data from APIs
   useEffect(() => {
@@ -21,35 +22,21 @@ function Home() {
       try {
         const [
           playersResponse,
-          matchesResponse,
-          upcomingResponse,
           aboutResponse,
         ] = await Promise.all([
           fetch(API_ENDPOINTS.PLAYERS),
-          fetch(API_ENDPOINTS.MATCHES),
-          fetch(API_ENDPOINTS.UPCOMING_MATCHES),
           fetch(API_ENDPOINTS.ABOUT_SECTION),
         ]);
 
         const [
           playersData,
-          matchesData,
-          upcomingData,
           aboutDataResponse,
         ] = await Promise.all([
           playersResponse.json(),
-          matchesResponse.json(),
-          upcomingResponse.json(),
           aboutResponse.json(),
         ]);
 
         setPlayers(playersData || []);
-        setRecentMatches(matchesData || []);
-
-        const filteredUpcomingMatches = upcomingData.filter(
-          (match) => new Date(match.date) > new Date()
-        );
-        setUpcomingMatches(filteredUpcomingMatches || []);
         setAboutData(aboutDataResponse || { title: "", description: [], imageUrl: "" });
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -61,20 +48,14 @@ function Home() {
 
   // Loading State
   if (!aboutData.title) {
-  return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black space-y-4">
-      <div className="w-60">
-        <div className="w-full bg-gray-700 rounded-full h-2.5 overflow-hidden">
-          <div
-            className="bg-blue-600 h-2.5 rounded-full animate-indeterminate"
-            style={{ width: "40%" }}
-          ></div>
-        </div>
-      </div>
-      <p className="text-blue-400 text-lg font-semibold">Loading...</p>
-    </div>
-  );
-}
+    return (
+      <FullPageLoading 
+        variant="dark" 
+        message="Loading JFC Homepage..." 
+        showProgress={true}
+      />
+    );
+  }
   return (
     <div>
       <Navbar />
@@ -158,117 +139,10 @@ function Home() {
         </section>
 
         {/* Matches Section */}
-        <section className="py-24 px-4 bg-gradient-to-br from-gray-900 to-blue-900">
-          <div className="max-w-4xl mx-auto">
-            {/* Recent Matches */}
-            <section className="py-24 px-4 bg-gradient-to-br from-gray-900 to-blue-900">
-              <div className="max-w-6xl mx-auto">
-                <div className="flex items-center gap-3 mb-12">
-                  <Trophy className="w-8 h-8 text-blue-400" />
-                  <h3 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
-                    Recent Matches
-                  </h3>
-                </div>
-                <div className="space-y-6">
-                  {recentMatches.map((match) => (
-                    <div key={match._id} className="relative group">
-                      <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-emerald-600 rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-1000"></div>
-                      <div className="relative bg-gray-800/50 p-8 rounded-lg backdrop-blur-sm transform group-hover:scale-[1.02] transition duration-500">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <h4 className="text-xl font-bold text-gray-200">
-                              {match.league}
-                            </h4>
-                            <p className="text-gray-400">
-                              {match.homeTeam} vs {match.awayTeam}
-                            </p>
-                          </div>
-                          <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
-                            {match.score}
-                          </span>
-                        </div>
-                        <div className="mt-6">
-                          {/* JFC Scorers */}
-                          <div className="mb-4">
-                            <h5 className="text-lg font-semibold text-blue-400">
-                              {match.homeTeam} Scorers:
-                            </h5>
-                            <ul className="text-gray-300">
-                              {match.jfcScorers.map((scorer, index) => (
-                                <li
-                                  key={index}
-                                  className="flex justify-between"
-                                >
-                                  <span>{scorer.name}</span>
-                                  <span className="text-sm text-gray-400">
-                                    {scorer.minute}'
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                          {/* Fresher Scorers */}
-                          <div>
-                            <h5 className="text-lg font-semibold text-emerald-400">
-                              {match.awayTeam} Scorers:
-                            </h5>
-                            <ul className="text-gray-300">
-                              {match.fresherScorers.map((scorer, index) => (
-                                <li
-                                  key={index}
-                                  className="flex justify-between"
-                                >
-                                  <span>{scorer.name}</span>
-                                  <span className="text-sm text-gray-400">
-                                    {scorer.minute}'
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
+        <MatchesSection />
 
-            {/* Upcoming Matches */}
-            <section className="py-24 px-4 bg-gradient-to-br from-gray-900 to-blue-900">
-              <div className="max-w-6xl mx-auto">
-                <div className="flex items-center gap-3 mb-12">
-                  <Calendar className="w-8 h-8 text-blue-400" />
-                  <h3 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
-                    Upcoming Matches
-                  </h3>
-                </div>
-                <div className="space-y-6">
-                  {upcomingMatches.map((match) => (
-                    <div key={match._id} className="relative group">
-                      <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-emerald-600 rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-1000"></div>
-                      <div className="relative bg-gray-800/50 p-8 rounded-lg backdrop-blur-sm transform group-hover:scale-[1.02] transition duration-500">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <h4 className="text-xl font-bold text-gray-200">
-                              {match.league}
-                            </h4>
-                            <p className="text-gray-400">
-                              {match.homeTeam} vs {match.awayTeam}
-                            </p>
-                          </div>
-                          <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
-                            {match.date}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          </div>
-        </section>
+        {/* Upcoming Matches Section */}
+        <UpcomingMatchesSection />
       </div>
       <Footer />
     </div>
